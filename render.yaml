@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: tennis-tracker
+    runtime: node
+    # Free instances sleep after a period without traffic, and the first visit then
+    # takes up to about a minute. For tournament days, switch this to a paid plan
+    # (e.g. "starter") in the Render dashboard, then back to free afterwards.
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
