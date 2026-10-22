@@ -10,8 +10,9 @@ if (!fs.existsSync(path.join(android, 'keystore.properties'))) {
   process.exit(1);
 }
 
-const gradlew = process.platform === 'win32' ? 'gradlew.bat' : './gradlew';
-const r = spawnSync(gradlew, ['assembleRelease'], { cwd: android, stdio: 'inherit', shell: true });
+// Full path: some Windows shells don't run programs from the current folder.
+const gradlew = path.join(android, process.platform === 'win32' ? 'gradlew.bat' : 'gradlew');
+const r = spawnSync(`"${gradlew}" assembleRelease`, { cwd: android, stdio: 'inherit', shell: true });
 if (r.status !== 0) process.exit(r.status || 1);
 
 const gradle = fs.readFileSync(path.join(android, 'app', 'build.gradle'), 'utf8');
