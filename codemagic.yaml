@@ -1,0 +1,35 @@
+# Cloud macOS build for the iOS app (no Mac needed). Codemagic reads this file from the repo root.
+# One-time setup is in mobile/README.md ("iOS"). Start a build from the Codemagic dashboard;
+# a successful build is uploaded to App Store Connect and appears in TestFlight.
+workflows:
+  ios-testflight:
+    name: iOS build to TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: AO Tennis App Store key # the name you give the API key in Codemagic
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.pradeepskgl.aotennis
+      node: 22
+      xcode: latest
+    scripts:
+      - name: Install app tooling
+        script: cd mobile && npm ci
+      - name: Bundle the web app and sync iOS
+        script: cd mobile && npm run build:ios
+      - name: Code signing
+        script: xcode-project use-profiles
+      - name: Build number
+        # Every upload needs a higher build number; Codemagic's BUILD_NUMBER increases per build.
+        script: |
+          sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = $BUILD_NUMBER;/" mobile/ios/App/App.xcodeproj/project.pbxproj
+      - name: Build IPA
+        script: xcode-project build-ipa --project mobile/ios/App/App.xcodeproj --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

@@ -1,0 +1,31 @@
+{
+  "name": "ao-tennis-mobile",
+  "private": true,
+  "description": "Android and iOS apps for the tennis tracker: the web frontend in public/ wrapped with Capacitor",
+  "scripts": {
+    "build": "node scripts/build-www.js && cap sync",
+    "apk": "npm run build:android && node scripts/build-apk.js",
+    "open": "cap open android",
+    "icons": "capacitor-assets generate --android --ios --iconBackgroundColor \"#0f3446\" --iconBackgroundColorDark \"#0f3446\" --splashBackgroundColor \"#0f3446\" --splashBackgroundColorDark \"#0f3446\"",
+    "build:android": "node scripts/build-www.js && cap sync android",
+    "build:ios": "node scripts/build-www.js && cap sync ios"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/share": "^8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3"
+  },
+  "allowScripts": {
+    "sharp@0.32.6": true
+  }
+}

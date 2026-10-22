@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f3446">
+  <title>Privacy Policy · AO Tennis Score Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <style>.doc { max-width: 720px; } .doc h2 { margin: 1.6rem 0 .4rem; } .doc li { margin: .3rem 0; }</style>
+</head>
+<body>
+  <header class="top"><a href="./" class="brand"><span class="ball"></span>AO Tennis Score Tracker</a></header>
+  <main class="wrap doc">
+    <h1>Privacy Policy</h1>
+    <p class="sub">Applies to the AO Tennis Score Tracker website and its Android and iOS apps. Last updated 22 October 2026.</p>
+
+    <h2>The short version</h2>
+    <p>The app shows tennis tournament scores. It has no ads, no analytics and no tracking, it does not sell or share data, and you can follow every tournament without an account.</p>
+
+    <h2>What is stored</h2>
+    <ul>
+      <li><strong>Tournament data:</strong> tournament names, the names of players and doubles teams as entered by the organiser, fixtures, courts, times, and point-by-point scores. This information is public: anyone using the app or website can see it.</li>
+      <li><strong>Scorer and admin sign-in:</strong> the username chosen by the organiser and a salted, one-way hash of the password (the password itself is never stored). After you sign in, the app keeps a sign-in token on your device until you sign out.</li>
+      <li><strong>Sign-in protection:</strong> to slow down password guessing, the server briefly remembers the network address of failed sign-in attempts in memory. It is not written to the database and is forgotten after 15 minutes or a server restart.</li>
+    </ul>
+
+    <h2>What is not collected</h2>
+    <p>No location, contacts, photos, device identifiers, advertising IDs or usage analytics. Viewers do not need an account.</p>
+
+    <h2>Where it is kept</h2>
+    <p>Data is stored in a MongoDB Atlas database and served from Render. All connections use HTTPS. The website loads its fonts from Google Fonts, which receives your network address when the fonts are fetched (see Google's privacy policy).</p>
+
+    <h2>Files you export</h2>
+    <p>Results, standings and backup files are created only when you ask for them, and go wherever you choose to save or share them.</p>
+
+    <h2>Removing data</h2>
+    <p>The tournament organiser can edit or delete players, matches, tournaments and scorer logins at any time. Deleting a scorer login signs that scorer out immediately. To ask for your name to be removed from a tournament, contact the organiser or open an issue on <a href="https://github.com/pradeepskgl/ao-tennis-app/issues">the project's GitHub page</a>.</p>
+
+    <h2>Children</h2>
+    <p>The app is not directed at children and does not knowingly collect information from them beyond names entered by an organiser for a tournament.</p>
+
+    <h2>Changes</h2>
+    <p>If this policy changes, the new version will be posted on this page with a new date.</p>
+  </main>
+</body>
+</html>

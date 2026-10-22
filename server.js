@@ -39,6 +39,27 @@ app.use((req, res, next) => {
   next();
 });
 
+// The mobile app serves its pages from a localhost origin and calls this API cross-origin.
+// Auth is a Bearer token (no cookies), so credentials are never allowed.
+const CORS_ORIGINS = new Set([
+  'https://localhost', // Capacitor Android
+  'capacitor://localhost', // Capacitor iOS
+  'http://localhost',
+  ...String(process.env.CORS_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean),
+]);
+app.use('/api', (req, res, next) => {
+  res.vary('Origin');
+  if (!CORS_ORIGINS.has(req.headers.origin)) return next();
+  res.set({
+    'Access-Control-Allow-Origin': req.headers.origin,
+    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
+    'Access-Control-Max-Age': '86400',
+  });
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  next();
+});
+
 /* ------------------------- live updates (SSE) ------------------------- */
 
 const streams = new Map(); // tournamentId -> Set(res)

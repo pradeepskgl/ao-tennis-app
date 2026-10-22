@@ -19,6 +19,12 @@
   const isAdmin = () => S.role === 'admin';
   const canScore = () => S.role === 'admin' || S.role === 'scorer';
 
+  // The website calls its own /api; the mobile app (Capacitor) sets apiBase in config.js.
+  const API = ((window.APP_CONFIG && window.APP_CONFIG.apiBase) || '').replace(/\/+$/, '') + '/api';
+  const Cap = window.Capacitor;
+  const isNative = !!(Cap && Cap.isNativePlatform && Cap.isNativePlatform());
+  const plugin = (name) => Cap.Plugins[name] || Cap.registerPlugin(name);
+
   /* ----------------------------- utilities ----------------------------- */
 
   function h(tag, attrs, ...kids) {
@@ -52,8 +58,45 @@
     setTimeout(() => t.remove(), bad ? 6000 : 3000);
   }
 
+  // The free hosting plan sleeps when idle and takes up to a minute to wake. Slow requests show a
+  // note, and requests the host rejected while waking (502/503) are retried. Network failures are
+  // only retried for reads, so a point is never scored twice.
+  let slowCount = 0;
+  let wakeNote = null;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  async function request(url, init = {}) {
+    const deadline = Date.now() + 75000;
+    const canRetryFailure = !init.method || init.method === 'GET';
+    let slow = false;
+    const slowTimer = setTimeout(() => {
+      slow = true;
+      if (++slowCount === 1) {
+        wakeNote = h('div', { class: 'toast', role: 'status' }, 'Waking up the server, this can take up to a minute…');
+        document.getElementById('toasts').append(wakeNote);
+      }
+    }, 4000);
+    try {
+      for (let wait = 2000; ; wait = Math.min(wait * 2, 10000)) {
+        const retryable = Date.now() + wait < deadline;
+        let res;
+        try {
+          res = await fetch(url, init);
+        } catch {
+          if (canRetryFailure && retryable) { await sleep(wait); continue; }
+          throw new Error('Could not reach the server. Check your connection and try again.');
+        }
+        if ((res.status === 502 || res.status === 503) && retryable) { await sleep(wait); continue; }
+        return res;
+      }
+    } finally {
+      clearTimeout(slowTimer);
+      if (slow && --slowCount === 0 && wakeNote) { wakeNote.remove(); wakeNote = null; }
+    }
+  }
+
   async function api(path, opts = {}) {
-    const res = await fetch('/api' + path, {
+    const res = await request(API + path, {
       method: opts.method || 'GET',
       headers: { 'Content-Type': 'application/json', ...(S.token ? { Authorization: 'Bearer ' + S.token } : {}) },
       body: opts.body ? JSON.stringify(opts.body) : undefined,
@@ -122,9 +165,27 @@
     return { dialog: d, body };
   }
 
-  async function downloadWithAuth(path, filename) {
-    const res = await fetch('/api' + path, { headers: { Authorization: 'Bearer ' + S.token } });
+  const blobToBase64 = (blob) => new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1]);
+    r.onerror = () => reject(new Error('Could not read the download.'));
+    r.readAsDataURL(blob);
+  });
+
+  // Browsers save the file; the app writes it to its cache and opens the share sheet
+  // (save to Files, Drive, email, WhatsApp...).
+  async function downloadFile(path, filename) {
+    const res = await request(API + path, { headers: S.token ? { Authorization: 'Bearer ' + S.token } : {} });
     if (!res.ok) throw new Error('Download failed. Sign in again and retry.');
+    if (isNative) {
+      const { uri } = await plugin('Filesystem').writeFile({ path: filename, data: await blobToBase64(await res.blob()), directory: 'CACHE' });
+      try {
+        await plugin('Share').share({ title: filename, files: [uri] });
+      } catch (e) {
+        if (!/cancel/i.test(e && e.message)) throw e;
+      }
+      return;
+    }
     const url = URL.createObjectURL(await res.blob());
     const a = h('a', { href: url, download: filename });
     document.body.append(a);
@@ -132,6 +193,11 @@
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
+
+  // Public CSVs: a plain link on the web, the share sheet in the app.
+  const csvLink = (path, filename, label) => (isNative
+    ? h('button', { class: 'linklike', onclick: () => act(() => downloadFile(path, filename)) }, label)
+    : h('a', { href: API + path, download: true }, label));
 
   /* ----------------------------- auth ----------------------------- */
 
@@ -422,9 +488,9 @@
 
     const downloads = h('div', { class: 'downloads' },
       h('span', { class: 'sub' }, 'Download:'),
-      h('a', { href: `/api/tournaments/${t.id}/results.csv`, download: true }, 'Results (CSV)'),
-      hasGroupStage() ? h('a', { href: `/api/tournaments/${t.id}/standings.csv`, download: true }, 'Standings (CSV)') : null,
-      isAdmin() ? h('button', { class: 'linklike', onclick: () => act(() => downloadWithAuth(`/tournaments/${t.id}/backup.json`, 'backup.json'), 'Backup downloaded') }, 'Full backup (JSON)') : null);
+      csvLink(`/tournaments/${t.id}/results.csv`, 'results.csv', 'Results (CSV)'),
+      hasGroupStage() ? csvLink(`/tournaments/${t.id}/standings.csv`, 'standings.csv', 'Standings (CSV)') : null,
+      isAdmin() ? h('button', { class: 'linklike', onclick: () => act(() => downloadFile(`/tournaments/${t.id}/backup.json`, 'backup.json'), isNative ? null : 'Backup downloaded') }, 'Full backup (JSON)') : null);
 
     return h('main', { class: 'wrap' },
       h('a', { class: 'back', href: '#/' }, '← All tournaments'),
@@ -1196,7 +1262,7 @@
   function openStream(id) {
     closeStream();
     if (!window.EventSource) return;
-    const es = new EventSource(`/api/tournaments/${id}/events`);
+    const es = new EventSource(`${API}/tournaments/${id}/events`);
     es.addEventListener('change', (ev) => {
       let data = {};
       try { data = JSON.parse(ev.data); } catch { /* ignore */ }
@@ -1267,6 +1333,24 @@
     else showList();
   }
   window.addEventListener('hashchange', route);
+
+  if (isNative) {
+    // Light status bar text and icons over the dark header (the config file only covers Android).
+    try { plugin('SystemBars').setStyle({ style: 'DARK' }).catch(() => {}); } catch { /* older runtime */ }
+
+    // Android back button (never fires on iOS): close an open dialog, else go back, else leave the app.
+    const App = plugin('App');
+    App.addListener('backButton', ({ canGoBack }) => {
+      const open = document.querySelector('dialog[open]');
+      if (open) open.close();
+      else if (canGoBack) history.back();
+      else App.minimizeApp();
+    });
+    // The live connection can die while the app is in the background; refresh on return.
+    App.addListener('resume', () => {
+      if (S.view === 'tournament' && S.t) { openStream(S.t.id); syncLive(true); }
+    });
+  }
 
   (async function init() {
     if (S.token) {

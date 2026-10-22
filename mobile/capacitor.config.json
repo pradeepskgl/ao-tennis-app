@@ -1,0 +1,18 @@
+{
+  "appId": "com.pradeepskgl.aotennis",
+  "appName": "AO Tennis Score Tracker",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "never"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover",
+      "style": "DARK"
+    }
+  }
+}

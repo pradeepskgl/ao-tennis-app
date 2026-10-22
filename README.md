@@ -30,6 +30,13 @@ npm test                  # scoring engine tests
 
 **Free tier sleep:** Render's free web services sleep after a period without traffic, and the next visit can take close to a minute to wake. For tournament days, either switch the service to a paid instance for the event, or have an uptime monitor (for example UptimeRobot) request `/healthz` every 5 to 10 minutes during the event. `/healthz` also reports whether the database is connected.
 
+Now that there is a phone app, keep the server awake all the time: point an UptimeRobot (free) HTTP monitor at `https://<your-service>.onrender.com/healthz` every 5 minutes. One service awake around the clock uses about 744 of the 750 free instance-hours a month, so this only works for a single free service. Even so, the app shows "Waking up the server…" and retries if it ever finds the server asleep.
+
+## Android and iOS apps
+The frontend is also packaged as Android and iOS apps with Capacitor (`mobile/`). Android installs from an APK file you share directly, and later from Google Play. iOS builds in the cloud with Codemagic (`codemagic.yaml`) and goes out through TestFlight and the App Store. Build steps, signing and releases are in [mobile/README.md](mobile/README.md). Phone users can find install instructions at `/android.html`, and the privacy policy the app stores require is at `/privacy.html`.
+
+The app calls the server from its own origin (`https://localhost` on Android, `capacitor://localhost` on iOS), and the server allows those origins for CORS. Add any others in the optional `CORS_ORIGINS` env var (comma-separated).
+
 ## Setting up a tournament
 1. **Create tournament**: name + Singles or Doubles.
 2. **Add players** (or teams of two), one at a time or in bulk (`Asha / Priya` per line for doubles).

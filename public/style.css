@@ -15,6 +15,15 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 'Public Sans', system-ui, sans-serif; }
+/* Space for phone status bars, notches and gesture bars (zero in ordinary browsers). The mobile app
+   may supply --safe-area-inset-* where the WebView's env() values are missing. */
+:root {
+  --sa-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --sa-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --sa-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --sa-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+}
+body { padding: 0 var(--sa-right) var(--sa-bottom) var(--sa-left); }
 h1, h2, h3 { font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; font-weight: 700; line-height: 1.1; margin: 0; letter-spacing: .01em; }
 h1 { font-size: 2.4rem; }
 h2 { font-size: 1.6rem; }
@@ -23,7 +32,7 @@ a { color: var(--court); }
 .loading { padding: 2rem; color: var(--muted); }
 
 /* header */
-.top { background: var(--court-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: .7rem 1.25rem; gap: .4rem 1rem; flex-wrap: wrap; }
+.top { background: var(--court-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: calc(.7rem + var(--sa-top)) 1.25rem .7rem; gap: .4rem 1rem; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: .6rem; color: #fff; text-decoration: none; font: 700 1.6rem 'Barlow Condensed', sans-serif; letter-spacing: .02em; white-space: nowrap; }
 .ball { width: 18px; height: 18px; border-radius: 50%; background: var(--ball); position: relative; overflow: hidden; }
 .ball::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid #fff; border-color: transparent #fff transparent transparent; transform: rotate(35deg) translateX(-9px); }
@@ -185,7 +194,7 @@ td.pts { font-weight: 700; }
 .th-sub { display: block; font-size: .72rem; font-weight: 500; opacity: .8; }
 td.name { white-space: normal; min-width: 7rem; overflow-wrap: break-word; }
 
-#toasts { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); display: grid; gap: .5rem; z-index: 50; width: min(420px, calc(100vw - 1.5rem)); }
+#toasts { position: fixed; bottom: calc(1rem + var(--sa-bottom)); left: 50%; transform: translateX(-50%); display: grid; gap: .5rem; z-index: 50; width: min(420px, calc(100vw - 1.5rem)); }
 .toast { background: var(--court-dark); color: #fff; padding: .6rem .9rem; border-radius: 8px; font-size: .92rem; border-left: 5px solid var(--ball); }
 .toast.bad { border-left-color: var(--clay); background: #4a1f14; }
 

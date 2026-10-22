@@ -5,6 +5,8 @@ services:
     # Free instances sleep after a period without traffic, and the first visit then
     # takes up to about a minute. For tournament days, switch this to a paid plan
     # (e.g. "starter") in the Render dashboard, then back to free afterwards.
+    # The Android app expects the server awake: point an UptimeRobot monitor at
+    # /healthz every 5 minutes (one always-on free service fits in 750 hours/month).
     plan: free
     buildCommand: npm install
     startCommand: npm start

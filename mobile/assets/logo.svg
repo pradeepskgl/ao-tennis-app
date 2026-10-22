@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs><clipPath id="ball"><circle cx="512" cy="512" r="440"/></clipPath></defs>
+  <circle cx="512" cy="512" r="440" fill="#d4e510"/>
+  <g clip-path="url(#ball)" fill="none" stroke="#ffffff" stroke-width="44" stroke-linecap="round">
+    <path d="M 210 110 C 420 300 420 724 210 914"/>
+    <path d="M 814 110 C 604 300 604 724 814 914"/>
+  </g>
+</svg>
