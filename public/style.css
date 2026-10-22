@@ -24,6 +24,8 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 'Publ
   --sa-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
 }
 body { padding: 0 var(--sa-right) var(--sa-bottom) var(--sa-left); }
+/* Solid strip under a transparent status bar so scrolled content doesn't show through it. */
+body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: var(--sa-top); background: var(--court-dark); z-index: 40; }
 h1, h2, h3 { font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; font-weight: 700; line-height: 1.1; margin: 0; letter-spacing: .01em; }
 h1 { font-size: 2.4rem; }
 h2 { font-size: 1.6rem; }
